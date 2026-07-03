@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ t('register') }} - Amar Krishi</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-card" style="max-width:480px;">
+    <div class="brand"><i class="fa-solid fa-seedling"></i><h2>Amar Krishi</h2></div>
+    <p class="sub">{{ t('create_account') }}</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message.replace('_',' ') }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <div class="form-group">
+        <label>{{ t('full_name') }}</label>
+        <input type="text" name="name" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label>{{ t('email') }}</label>
+        <input type="email" name="email" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label>{{ t('phone') }}</label>
+        <input type="tel" name="phone" class="form-control" placeholder="01XXXXXXXXX">
+      </div>
+      <div class="form-group">
+        <label>{{ t('district') }}</label>
+        <select name="district" class="form-control">
+          <option>Dhaka</option><option>Rajshahi</option><option>Khulna</option>
+          <option>Rangpur</option><option>Barisal</option><option>Sylhet</option>
+          <option>Chattogram</option><option>Mymensingh</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>{{ t('password') }}</label>
+        <input type="password" name="password" class="form-control" required minlength="6">
+      </div>
+      <div class="form-group">
+        <label>{{ t('confirm_password') }}</label>
+        <input type="password" name="confirm_password" class="form-control" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-block">{{ t('register') }}</button>
+    </form>
+
+    <div class="auth-footer">
+      {{ t('welcome_back') }}? <a href="{{ url_for('auth.login') }}">{{ t('login') }}</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

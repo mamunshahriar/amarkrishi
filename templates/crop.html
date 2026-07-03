@@ -1,0 +1,54 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="card" style="margin-bottom:18px;">
+  <h3><i class="fa-solid fa-seedling" style="color:var(--color-primary);"></i> {{ t('nav_crop_advisory') }}</h3>
+  <form method="POST" class="grid grid-4" style="align-items:end;">
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('soil_type') }}</label>
+      <select name="soil_type" class="form-control">
+        <option value="">--</option>
+        <option>Clay</option><option>Loamy</option><option>Sandy Loam</option><option>Sandy</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('district') }}</label>
+      <select name="district" class="form-control">
+        {% for d in districts %}<option>{{ d }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('season') }}</label>
+      <select name="season" class="form-control">
+        <option value="">--</option>
+        <option>Kharif</option><option>Rabi</option><option>Summer</option>
+      </select>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-magnifying-glass"></i> {{ t('suggest_crops') }}</button>
+  </form>
+</div>
+
+{% if crops %}
+<div class="grid grid-3">
+  {% for crop in crops %}
+  <div class="card">
+    <img src="https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?w=400&q=60" style="border-radius:10px;height:140px;object-fit:cover;margin-bottom:12px;" alt="{{ crop.crop_name }}">
+    <div class="flex-between">
+      <h3 style="margin-bottom:0;">{{ crop.crop_name_bn if current_lang=='bn' else crop.crop_name }}</h3>
+      <span class="tag tag-{{ 'high' if crop.profit_level=='High' else ('medium' if crop.profit_level=='Medium' else 'low') }}">{{ crop.profit_level }}</span>
+    </div>
+    <p style="font-size:12.5px;color:var(--color-text-muted);margin:8px 0;">{{ crop.description }}</p>
+    <table>
+      <tr><td>{{ t('season') }}</td><td>{{ crop.season }}</td></tr>
+      <tr><td>Yield</td><td>{{ crop.expected_yield }}</td></tr>
+      <tr><td>Growing Time</td><td>{{ crop.growing_time_days }} days</td></tr>
+      <tr><td>Market Demand</td><td>{{ crop.market_demand }}</td></tr>
+    </table>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p style="color:var(--color-text-muted);">Fill out the form above to get personalized crop recommendations.</p>
+{% endif %}
+
+{% endblock %}

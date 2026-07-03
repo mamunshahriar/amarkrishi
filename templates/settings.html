@@ -1,0 +1,31 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="card" style="max-width:500px;">
+  <h3><i class="fa-solid fa-gear" style="color:var(--color-primary);"></i> {{ t('nav_settings') }}</h3>
+
+  <form method="POST">
+    <div class="form-group">
+      <label>{{ t('language') }}</label>
+      <select name="language" class="form-control">
+        <option value="bn" {{ 'selected' if current_lang=='bn' }}>বাংলা</option>
+        <option value="en" {{ 'selected' if current_lang=='en' }}>English</option>
+      </select>
+    </div>
+    <button type="submit" class="btn">{{ t('save_changes') }}</button>
+  </form>
+
+  <hr style="margin:22px 0;border:none;border-top:1px solid var(--color-border);">
+
+  <div class="flex-between" style="margin-bottom:14px;">
+    <span>{{ t('notifications') }}</span>
+    <label style="position:relative;"><input type="checkbox" checked> Enabled</label>
+  </div>
+  <div class="flex-between" style="margin-bottom:14px;">
+    <span>{{ t('dark_mode') }}</span>
+    <label><input type="checkbox"> Off</label>
+  </div>
+  <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-outline btn-block">Change Password</a>
+</div>
+
+{% endblock %}

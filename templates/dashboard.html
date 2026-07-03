@@ -1,0 +1,150 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="hero-banner">
+  <div class="hero-text">
+    <h2>{{ t('hero_title_1') }}<span>{{ t('hero_title_2') }}</span></h2>
+    <p>{{ t('hero_subtitle') }}</p>
+    <a href="{{ url_for('main.crop_advisory') }}" class="btn">{{ t('get_started') }} <i class="fa-solid fa-arrow-right"></i></a>
+
+    <div class="hero-stats">
+      <div class="stat"><i class="fa-solid fa-users"></i><div><strong>12K+</strong><span>{{ t('active_farmers') }}</span></div></div>
+      <div class="stat"><i class="fa-solid fa-leaf"></i><div><strong>50+</strong><span>{{ t('crops_supported') }}</span></div></div>
+      <div class="stat"><i class="fa-solid fa-bullseye"></i><div><strong>98%</strong><span>{{ t('accuracy_rate') }}</span></div></div>
+      <div class="stat"><i class="fa-regular fa-clock"></i><div><strong>24/7</strong><span>{{ t('ai_support') }}</span></div></div>
+    </div>
+  </div>
+  <img src="https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?w=600&q=80" alt="Farmer" style="max-width:340px;border-radius:20px;object-fit:cover;">
+</div>
+
+<div class="quick-features">
+  <a href="{{ url_for('main.crop_advisory') }}" class="feature-tile"><i class="fa-solid fa-seedling"></i><span>{{ t('nav_crop_advisory') }}</span></a>
+  <a href="{{ url_for('main.disease_detection') }}" class="feature-tile"><i class="fa-solid fa-bacteria"></i><span>{{ t('nav_disease_detection') }}</span></a>
+  <a href="{{ url_for('main.fertilizer_suggestion') }}" class="feature-tile"><i class="fa-solid fa-flask-vial"></i><span>{{ t('nav_fertilizer') }}</span></a>
+  <a href="{{ url_for('main.weather') }}" class="feature-tile"><i class="fa-solid fa-cloud-sun"></i><span>{{ t('nav_weather') }}</span></a>
+  <a href="{{ url_for('main.market_prices') }}" class="feature-tile"><i class="fa-solid fa-arrow-trend-up"></i><span>{{ t('nav_market') }}</span></a>
+  <a href="{{ url_for('main.irrigation_management') }}" class="feature-tile"><i class="fa-solid fa-droplet"></i><span>{{ t('nav_irrigation') }}</span></a>
+  <a href="{{ url_for('main.pest_prediction') }}" class="feature-tile"><i class="fa-solid fa-bug"></i><span>{{ t('nav_pest') }}</span></a>
+  <a href="{{ url_for('main.dashboard') }}" class="feature-tile"><i class="fa-solid fa-grip"></i><span>View All</span></a>
+</div>
+
+<div class="grid grid-2" style="align-items:start;">
+  <div>
+    <h3 style="margin-bottom:14px;">{{ t('todays_summary') }}</h3>
+    <div class="grid grid-4" style="margin-bottom:18px;">
+      <div class="card">
+        <i class="fa-solid fa-cloud-sun" style="color:var(--color-accent);font-size:22px;"></i>
+        <h2 style="margin:8px 0 0;">{{ weather.temperature|round(0)|int if weather else '--' }}°C</h2>
+        <p style="font-size:12px;color:var(--color-text-muted);">{{ t('weather_today') }}</p>
+        <p style="font-size:11px;color:var(--color-text-muted);"><i class="fa-solid fa-location-dot"></i> {{ user.district or weather.district if weather else '' }}</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-high">{{ t('disease_alert') }}</span>
+        <p style="font-size:13px;margin-top:10px;">{{ t('nav_disease_detection') }}</p>
+        <a href="{{ url_for('main.disease_detection') }}" class="btn btn-outline btn-sm" style="margin-top:10px;">{{ t('view_details') }}</a>
+      </div>
+      <div class="card">
+        <p style="font-size:12px;color:var(--color-text-muted);">{{ t('todays_market_price') }}</p>
+        <h2 style="margin:6px 0;">৳{{ market[0].price_per_kg if market else '--' }}</h2>
+        <span class="price-up">{{ '+2.5%' }}</span>
+        <a href="{{ url_for('main.market_prices') }}" class="btn btn-outline btn-sm" style="margin-top:10px;display:block;text-align:center;">{{ t('view_market') }}</a>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p style="font-size:12px;color:var(--color-text-muted);">{{ t('crop_status') }}</p>
+        <div style="position:relative;width:64px;height:64px;margin:8px auto;">
+          <svg viewBox="0 0 36 36" style="width:100%;height:100%;">
+            <path stroke="#e6ece8" stroke-width="3.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path stroke="#1b7a3d" stroke-width="3.5" fill="none" stroke-dasharray="75,100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          </svg>
+          <strong style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;">75%</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><i class="fa-solid fa-chart-simple" style="color:var(--color-primary);"></i> {{ t('market_price_update') }}</h3>
+        <table>
+          <thead><tr><th>{{ t('crop_name') }}</th><th>{{ t('today_price') }}</th><th>{{ t('yesterday_price') }}</th><th>{{ t('change') }}</th></tr></thead>
+          <tbody>
+          {% for p in market %}
+            <tr>
+              <td>{{ p.crop.crop_name_bn if current_lang=='bn' else p.crop.crop_name }}</td>
+              <td>৳{{ p.price_per_kg }}</td>
+              <td>৳{{ p.previous_price }}</td>
+              <td class="{{ 'price-up' if p.price_per_kg >= p.previous_price else 'price-down' }}">
+                {{ '+' if p.price_per_kg >= p.previous_price else '' }}{{ (((p.price_per_kg - p.previous_price) / p.previous_price) * 100) | round(1) if p.previous_price else 0 }}%
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" style="color:var(--color-text-muted);">No market data yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <a href="{{ url_for('main.market_prices') }}" style="font-size:12.5px;color:var(--color-primary);font-weight:600;display:inline-block;margin-top:10px;">{{ t('view_full_market') }}</a>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color:var(--color-warning);"></i> {{ t('weather_alerts') }}</h3>
+        {% if weather and weather.alert_type != 'None' %}
+        <div style="background:var(--color-bg);border-radius:10px;padding:12px;margin-bottom:10px;">
+          <div class="flex-between">
+            <strong style="font-size:13px;">{{ weather.alert_type }}</strong>
+            <span class="tag tag-{{ 'high' if weather.alert_severity=='High' else ('medium' if weather.alert_severity=='Medium' else 'low') }}">{{ weather.alert_severity }}</span>
+          </div>
+          <p style="font-size:12px;color:var(--color-text-muted);margin-top:6px;">{{ t('rain_probability') }}: {{ weather.rain_probability }}%</p>
+        </div>
+        {% else %}
+        <p style="font-size:13px;color:var(--color-text-muted);">No active alerts for your district today.</p>
+        {% endif %}
+        <a href="{{ url_for('main.weather') }}" class="btn btn-outline btn-sm">{{ t('view_details') }}</a>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h3><i class="fa-solid fa-bolt" style="color:var(--color-accent);"></i> {{ t('quick_actions') }}</h3>
+      <div class="action-list">
+        <a href="{{ url_for('main.fertilizer_suggestion') }}"><span><i class="fa-solid fa-vial"></i> {{ t('nav_fertilizer') }}</span><i class="fa-solid fa-chevron-right"></i></a>
+        <a href="{{ url_for('main.disease_detection') }}"><span><i class="fa-solid fa-camera"></i> {{ t('nav_disease_detection') }}</span><i class="fa-solid fa-chevron-right"></i></a>
+        <a href="{{ url_for('main.crop_advisory') }}"><span><i class="fa-solid fa-seedling"></i> {{ t('nav_crop_advisory') }}</span><i class="fa-solid fa-chevron-right"></i></a>
+        <a href="{{ url_for('main.weather') }}"><span><i class="fa-solid fa-cloud"></i> {{ t('nav_weather') }}</span><i class="fa-solid fa-chevron-right"></i></a>
+        <a href="{{ url_for('main.expense_tracker') }}"><span><i class="fa-solid fa-sack-dollar"></i> {{ t('nav_expense') }}</span><i class="fa-solid fa-chevron-right"></i></a>
+      </div>
+    </div>
+
+    <div class="sms-card">
+      <i class="fa-solid fa-mobile-screen-button"></i>
+      <h3 style="font-size:15px;">{{ t('sms_alerts_enabled') }}</h3>
+      <p>{{ t('sms_alerts_desc') }}</p>
+      <a href="{{ url_for('main.settings') }}" class="btn btn-block">{{ t('enable_settings') }}</a>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-top:18px;">
+  <div class="card">
+    <h3><i class="fa-solid fa-robot" style="color:var(--color-primary);"></i> {{ t('ai_assistant') }}</h3>
+    <p style="font-size:12.5px;color:var(--color-text-muted);margin-bottom:12px;">{{ t('ai_assistant_desc') }}</p>
+    <a href="{{ url_for('main.ai_assistant') }}" class="btn btn-sm btn-block">{{ t('ask_question') }}</a>
+  </div>
+  <div class="card">
+    <h3><i class="fa-solid fa-comments" style="color:var(--color-primary);"></i> {{ t('community_forum') }}</h3>
+    <p style="font-size:12.5px;color:var(--color-text-muted);margin-bottom:12px;">{{ t('nav_forum') }}</p>
+    <a href="{{ url_for('main.community_forum') }}" class="btn btn-sm btn-outline btn-block">{{ t('join_discussion') }}</a>
+  </div>
+  <div class="card">
+    <h3><i class="fa-solid fa-user-doctor" style="color:var(--color-primary);"></i> {{ t('expert_consultation') }}</h3>
+    <p style="font-size:12.5px;color:var(--color-text-muted);margin-bottom:12px;">{{ t('nav_consultation') }}</p>
+    <a href="{{ url_for('main.expert_consultation') }}" class="btn btn-sm btn-outline btn-block">{{ t('chat_now') }}</a>
+  </div>
+  <div class="card">
+    <h3><i class="fa-solid fa-coins" style="color:var(--color-primary);"></i> {{ t('profit') }} &amp; {{ t('expense') }}</h3>
+    <p style="font-size:12px;color:var(--color-text-muted);">{{ t('income') }}: <strong>৳{{ income }}</strong></p>
+    <p style="font-size:12px;color:var(--color-text-muted);">{{ t('expense') }}: <strong>৳{{ expense }}</strong></p>
+    <p style="font-size:13px;margin-top:6px;">{{ t('profit') }}: <strong style="color:var(--color-primary);">৳{{ profit }}</strong></p>
+  </div>
+</div>
+
+{% endblock %}

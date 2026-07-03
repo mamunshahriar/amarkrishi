@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3><i class="fa-solid fa-camera-retro" style="color:var(--color-primary);"></i> {{ t('nav_disease_detection') }}</h3>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>{{ t('upload_leaf_image') }}</label>
+        <input type="file" name="leaf_image" accept="image/png, image/jpeg" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-block"><i class="fa-solid fa-magnifying-glass-chart"></i> {{ t('analyze') }}</button>
+    </form>
+
+    {% if result %}
+    <div style="margin-top:22px;border-top:1px solid var(--color-border);padding-top:18px;">
+      <img src="{{ url_for('static', filename='uploads/' + result.image) }}" style="border-radius:10px;max-height:200px;object-fit:cover;margin-bottom:14px;">
+      <div class="flex-between">
+        <h3 style="margin:0;">{{ result.disease.disease_name_bn if (current_lang=='bn' and result.disease) else (result.disease.disease_name if result.disease else 'Unknown') }}</h3>
+        <span class="tag tag-high">{{ result.confidence }}% {{ t('confidence_score') }}</span>
+      </div>
+      {% if result.disease %}
+      <table style="margin-top:12px;">
+        <tr><td>{{ t('symptoms') }}</td><td>{{ result.disease.symptoms }}</td></tr>
+        <tr><td>{{ t('possible_cause') }}</td><td>{{ result.disease.possible_cause }}</td></tr>
+        <tr><td>{{ t('treatment') }}</td><td>{{ result.disease.treatment }}</td></tr>
+        <tr><td>{{ t('prevention') }}</td><td>{{ result.disease.prevention }}</td></tr>
+        <tr><td>{{ t('medicine_suggestion') }}</td><td>{{ result.disease.medicine }}</td></tr>
+      </table>
+      {% endif %}
+      <button class="btn btn-outline btn-sm" style="margin-top:14px;" onclick="window.print()"><i class="fa-solid fa-download"></i> {{ t('download_report') }}</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3><i class="fa-solid fa-clock-rotate-left" style="color:var(--color-primary);"></i> Detection History</h3>
+    <table>
+      <thead><tr><th>Date</th><th>Result</th><th>Confidence</th></tr></thead>
+      <tbody>
+      {% for h in history %}
+        <tr>
+          <td>{{ h.detection_date.strftime('%d %b, %Y') }}</td>
+          <td>{{ h.result }}</td>
+          <td>{{ h.confidence }}%</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3" style="color:var(--color-text-muted);">No detection history yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

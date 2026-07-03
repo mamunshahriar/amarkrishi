@@ -1,0 +1,49 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3><i class="fa-solid fa-arrow-trend-up" style="color:var(--color-primary);"></i> {{ t('nav_market') }}</h3>
+    <input type="text" class="form-control" placeholder="Search crop..." style="margin-bottom:12px;" onkeyup="filterTable(this.value)">
+    <table id="marketTable">
+      <thead>
+        <tr><th>{{ t('crop_name') }}</th><th>{{ t('today_price') }}</th><th>{{ t('yesterday_price') }}</th><th>{{ t('change') }}</th><th>{{ t('best_market') }}</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for p in prices %}
+        <tr>
+          <td>{{ p.crop.crop_name_bn if current_lang=='bn' else p.crop.crop_name }}</td>
+          <td>৳{{ p.price_per_kg }}</td>
+          <td>৳{{ p.previous_price }}</td>
+          <td class="{{ 'price-up' if p.price_per_kg >= p.previous_price else 'price-down' }}">
+            {{ '+' if p.price_per_kg >= p.previous_price else '' }}{{ (((p.price_per_kg - p.previous_price) / p.previous_price) * 100) | round(1) if p.previous_price else 0 }}%
+          </td>
+          <td>{{ p.market_name }}</td>
+          <td><button class="btn btn-sm btn-outline" data-trend-crop="{{ p.crop_id }}">Trend</button></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" style="color:var(--color-text-muted);">No market data available.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3><i class="fa-solid fa-chart-line" style="color:var(--color-primary);"></i> 7-Day Price Trend</h3>
+    <canvas id="trendChart" height="220"></canvas>
+    <p style="font-size:12px;color:var(--color-text-muted);margin-top:10px;">Click "Trend" next to any crop to load its 7-day price chart.</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterTable(query) {
+  query = query.toLowerCase();
+  document.querySelectorAll("#marketTable tbody tr").forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(query) ? "" : "none";
+  });
+}
+</script>
+{% endblock %}

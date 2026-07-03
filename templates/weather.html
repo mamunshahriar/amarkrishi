@@ -1,0 +1,61 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3><i class="fa-solid fa-cloud-sun-rain" style="color:var(--color-primary);"></i> {{ t('weather_today') }}
+      {% if selected %} - {{ selected.district }}{% endif %}
+    </h3>
+    {% if selected %}
+    <div class="grid grid-4">
+      <div class="card" style="box-shadow:none;background:var(--color-bg);"><i class="fa-solid fa-temperature-half"></i><h2>{{ selected.temperature }}°C</h2><p style="font-size:11px;">{{ t('temperature') }}</p></div>
+      <div class="card" style="box-shadow:none;background:var(--color-bg);"><i class="fa-solid fa-droplet"></i><h2>{{ selected.humidity }}%</h2><p style="font-size:11px;">{{ t('humidity') }}</p></div>
+      <div class="card" style="box-shadow:none;background:var(--color-bg);"><i class="fa-solid fa-wind"></i><h2>{{ selected.wind_speed }} km/h</h2><p style="font-size:11px;">{{ t('wind_speed') }}</p></div>
+      <div class="card" style="box-shadow:none;background:var(--color-bg);"><i class="fa-solid fa-cloud-rain"></i><h2>{{ selected.rain_probability }}%</h2><p style="font-size:11px;">{{ t('rain_probability') }}</p></div>
+    </div>
+
+    {% if selected.alert_type != 'None' %}
+    <div style="margin-top:16px;padding:14px;border-radius:10px;background:var(--color-primary-light);">
+      <div class="flex-between">
+        <strong>{{ selected.alert_type }} Alert</strong>
+        <span class="tag tag-{{ 'high' if selected.alert_severity=='High' else ('medium' if selected.alert_severity=='Medium' else 'low') }}">{{ selected.alert_severity }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <p style="margin-top:14px;font-size:13px;"><i class="fa-solid fa-clock" style="color:var(--color-primary);"></i> {{ t('best_irrigation_time') }}: <strong>{{ selected.best_irrigation_time }}</strong></p>
+    {% else %}
+    <p style="color:var(--color-text-muted);">No weather data available yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3><i class="fa-solid fa-map-location-dot" style="color:var(--color-primary);"></i> Weather by District</h3>
+    <table>
+      <thead><tr><th>{{ t('district') }}</th><th>{{ t('temperature') }}</th><th>Alert</th></tr></thead>
+      <tbody>
+      {% for w in records %}
+        <tr>
+          <td>{{ w.district }}</td>
+          <td>{{ w.temperature }}°C</td>
+          <td>
+            {% if w.alert_type != 'None' %}
+              <span class="tag tag-{{ 'high' if w.alert_severity=='High' else ('medium' if w.alert_severity=='Medium' else 'low') }}">{{ w.alert_type }}</span>
+            {% else %}
+              <span class="tag tag-success">Clear</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="sms-card">
+      <i class="fa-solid fa-comment-sms"></i>
+      <h3 style="font-size:14px;">{{ t('sms_alerts_enabled') }}</h3>
+      <p>{{ t('sms_alerts_desc') }}</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

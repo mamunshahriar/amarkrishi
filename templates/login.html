@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ t('login') }} - Amar Krishi</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="brand"><i class="fa-solid fa-seedling"></i><h2>Amar Krishi</h2></div>
+    <p class="sub">{{ t('welcome_back') }}</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message.replace('_',' ') }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="form-group">
+        <label>{{ t('email') }}</label>
+        <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>{{ t('password') }}</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <div class="flex-between" style="margin-bottom:18px;">
+        <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" name="remember_me"> {{ t('remember_me') }}
+        </label>
+        <a href="{{ url_for('auth.forgot_password') }}" style="font-size:13px;color:var(--color-primary);font-weight:600;">{{ t('forgot_password') }}</a>
+      </div>
+      <button type="submit" class="btn btn-block">{{ t('login') }}</button>
+    </form>
+
+    <div class="auth-footer">
+      {{ t('create_account') }}? <a href="{{ url_for('auth.register') }}">{{ t('register') }}</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3><i class="fa-solid fa-sack-dollar" style="color:var(--color-primary);"></i> {{ t('nav_expense') }}</h3>
+    <form method="POST" class="grid grid-3" style="align-items:end;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Type</label>
+        <select name="type" class="form-control">
+          <option value="Income">{{ t('income') }}</option>
+          <option value="Expense">{{ t('expense') }}</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Category</label>
+        <input type="text" name="category" class="form-control" placeholder="Seeds, Fertilizer, Sale...">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Amount (৳)</label>
+        <input type="number" step="0.01" name="amount" class="form-control" required>
+      </div>
+      <button type="submit" class="btn" style="grid-column: span 3;">Add Entry</button>
+    </form>
+
+    <table style="margin-top:18px;">
+      <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th></tr></thead>
+      <tbody>
+      {% for t_ in transactions %}
+        <tr>
+          <td>{{ t_.transaction_date }}</td>
+          <td><span class="tag tag-{{ 'success' if t_.type=='Income' else 'danger' }}">{{ t_.type }}</span></td>
+          <td>{{ t_.category }}</td>
+          <td>৳{{ t_.amount }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" style="color:var(--color-text-muted);">No transactions yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>{{ t('income') }} vs {{ t('expense') }}</h3>
+    <canvas id="incomeExpenseChart"
+      data-income="{{ income }}" data-expense="{{ expense }}"
+      data-income-label="{{ t('income') }}" data-expense-label="{{ t('expense') }}"
+      height="240"></canvas>
+    <div style="margin-top:14px;">
+      <p>{{ t('income') }}: <strong>৳{{ income }}</strong></p>
+      <p>{{ t('expense') }}: <strong>৳{{ expense }}</strong></p>
+      <p>{{ t('profit') }}: <strong style="color:var(--color-primary);">৳{{ income - expense }}</strong></p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
