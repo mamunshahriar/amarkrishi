@@ -1,12 +1,18 @@
 """
 Amar Krishi - Digital Farming Assistance Platform
 Main Flask Application Entry Point
+
+Production notes:
+- The module-level `app` object is what Gunicorn imports (`gunicorn app:app`).
+- No debug code or hardcoded secrets live here; everything comes from config.py,
+  which in turn reads environment variables set in Render's dashboard.
 """
 
 import os
+import logging
 from flask import Flask, session, request
-from config import Config
-from models.models import db, User, Crop
+from config import get_config
+from models.models import db, User
 from translations import get_text
 from routes.auth_routes import auth_bp
 from routes.main_routes import main_bp
@@ -14,9 +20,16 @@ from routes.main_routes import main_bp
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(get_config())
 
-    # Ensure upload folder exists
+    # --- Logging (stdout, so Render's log stream picks it up) ---
+    logging.basicConfig(
+        level=getattr(logging, app.config.get("LOG_LEVEL", "INFO")),
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+    app.logger.setLevel(app.config.get("LOG_LEVEL", "INFO"))
+
+    # Ensure upload folder exists (created automatically if missing).
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     db.init_app(app)
@@ -46,6 +59,11 @@ def create_app():
                 unread_count = Notification.query.filter_by(user_id=user.user_id, status="Unread").count()
         return dict(nav_user=user, unread_count=unread_count)
 
+    # --- Basic health check endpoint for Render / uptime monitors ---
+    @app.route("/healthz")
+    def healthz():
+        return {"status": "ok"}, 200
+
     return app
 
 
@@ -53,6 +71,9 @@ app = create_app()
 
 
 if __name__ == "__main__":
+    # Local development only. In production, Gunicorn runs `app:app` directly
+    # (see Procfile) and this block never executes.
     with app.app_context():
-        db.create_all()  # Creates tables if they don't exist (schema.sql is the canonical source)
-    app.run(debug=True, host="0.0.0.0", port=5000)
+        db.create_all()  # convenience for local dev; schema.sql is the canonical source
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=app.config.get("DEBUG", False))

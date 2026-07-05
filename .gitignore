@@ -1,0 +1,28 @@
+# Virtual environment - NEVER commit this (found in your uploaded zip - remove before pushing to GitHub)
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Flask / SQLAlchemy
+instance/
+*.db
+*.sqlite3
+
+# Environment variables / secrets
+.env
+.env.*
+
+# User uploads (ephemeral on Render unless using a Persistent Disk)
+static/uploads/*
+!static/uploads/.gitkeep
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
