@@ -8,6 +8,10 @@
 -- ---------------------------------------------------------
 -- Users
 -- ---------------------------------------------------------
+
+CREATE DATABASE IF NOT EXISTS railway;
+USE railway;
+
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
@@ -99,7 +103,7 @@ CREATE TABLE market_prices (
     district VARCHAR(100),
     price_per_kg DECIMAL(8,2) NOT NULL,
     previous_price DECIMAL(8,2),
-    update_date DATE DEFAULT (CURRENT_DATE),
+    update_date DATE DEFAULT (CURRENT_DATE()),
     FOREIGN KEY (crop_id) REFERENCES crops(crop_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -129,7 +133,7 @@ CREATE TABLE transactions (
     category VARCHAR(100),
     amount DECIMAL(10,2) NOT NULL,
     note VARCHAR(255),
-    transaction_date DATE DEFAULT (CURRENT_DATE),
+    transaction_date DATE DEFAULT (CURRENT_DATE()),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
