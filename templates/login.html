@@ -11,7 +11,7 @@
 <body>
 <div class="auth-wrapper">
   <div class="auth-card">
-    <div class="brand"><i class="fa-solid fa-seedling"></i><h2>Amar Krishi</h2></div>
+    <div class="brand"><span>🌱</span><h2>Amar Krishi</h2></div>
     <p class="sub">{{ t('welcome_back') }}</p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -25,19 +25,25 @@
     <form method="POST" action="{{ url_for('auth.login') }}">
       <div class="form-group">
         <label>{{ t('email') }}</label>
-        <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+        <input type="text" name="email" class="form-control" placeholder="you@example.com" autocomplete="username" required>
       </div>
       <div class="form-group">
         <label>{{ t('password') }}</label>
-        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        <div class="password-wrap">
+          <input type="password" name="password" id="passwordField" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
+          <button type="button" class="toggle-eye" onclick="togglePasswordVisibility()" aria-label="Show password" tabindex="-1">
+            <svg id="eyeIconOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="eyeIconClosed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.62 21.62 0 0 1 5.06-6.06M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 8 11 8a21.7 21.7 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="flex-between" style="margin-bottom:18px;">
-        <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
+      <div class="remember-row">
+        <label class="remember-label">
           <input type="checkbox" name="remember_me"> {{ t('remember_me') }}
         </label>
-        <a href="{{ url_for('auth.forgot_password') }}" style="font-size:13px;color:var(--color-primary);font-weight:600;">{{ t('forgot_password') }}</a>
+        <a href="{{ url_for('auth.forgot_password') }}" class="forgot-link">{{ t('forgot_password') }}</a>
       </div>
-      <button type="submit" class="btn btn-block">{{ t('login') }}</button>
+      <button id="loginBtn" type="submit">{{ t('login') }}</button>
     </form>
 
     <div class="auth-footer">
@@ -45,5 +51,17 @@
     </div>
   </div>
 </div>
+
+<script>
+function togglePasswordVisibility(){
+  const field = document.getElementById('passwordField');
+  const open = document.getElementById('eyeIconOpen');
+  const closed = document.getElementById('eyeIconClosed');
+  const showing = field.type === 'password';
+  field.type = showing ? 'text' : 'password';
+  open.style.display = showing ? 'none' : 'block';
+  closed.style.display = showing ? 'block' : 'none';
+}
+</script>
 </body>
 </html>
