@@ -57,9 +57,48 @@ class Config:
     ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB
 
-    # --- Weather (placeholder, plug a real API key when available) ---
+    # --- Weather ---
+    # Primary source is Open-Meteo (https://open-meteo.com) which is free and
+    # requires NO API key at all, so weather works out of the box on Render.
+    # If WEATHER_API_KEY is set, OpenWeatherMap is used instead/as a secondary source.
     WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY", "")
     WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
+    OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
+    OPEN_METEO_GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
+
+    # --- Market Prices ---
+    # Optional external market-price API. If unset (or the request fails),
+    # the app automatically falls back to the local MarketPrice table so the
+    # page never breaks. See services/market_service.py.
+    MARKET_API_URL = os.environ.get("MARKET_API_URL", "")
+    MARKET_API_KEY = os.environ.get("MARKET_API_KEY", "")
+
+    # --- AI Assistant (Google Gemini free tier) ---
+    # Create a free key at https://aistudio.google.com/app/apikey
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+    GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+    GEMINI_API_URL = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{GEMINI_MODEL}:generateContent"
+    )
+
+    # --- Email (Flask-Mail) for verification codes & password reset OTPs ---
+    # Works with Gmail (use an App Password), SendGrid SMTP, Mailtrap, etc.
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "True").lower() == "true"
+    MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL", "False").lower() == "true"
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", MAIL_USERNAME)
+    # If no MAIL_USERNAME/PASSWORD is configured, the app logs OTP codes to the
+    # server log instead of failing, so local/dev testing never gets blocked.
+    MAIL_CONFIGURED = bool(MAIL_USERNAME and MAIL_PASSWORD)
+
+    OTP_EXPIRY_MINUTES = int(os.environ.get("OTP_EXPIRY_MINUTES", 10))
+    # Set to "False" to allow login before the email is verified (kept optional
+    # per the spec — verification is enforced by default).
+    REQUIRE_EMAIL_VERIFICATION = os.environ.get("REQUIRE_EMAIL_VERIFICATION", "True").lower() == "true"
 
     # --- Default language ---
     DEFAULT_LANGUAGE = "bn"
