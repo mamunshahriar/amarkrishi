@@ -22,10 +22,10 @@ def login():
             session["user_id"] = user.user_id
             session["user_name"] = user.name
             session.permanent = bool(remember)
-            flash("success", "login_success")
+            flash("সফলভাবে লগইন হয়েছে!", "success")
             return redirect(url_for("main.dashboard"))
 
-        flash("error", "invalid_credentials")
+        flash("ইমেইল বা পাসওয়ার্ড সঠিক নয়।", "error")
         return redirect(url_for("auth.login"))
 
     return render_template("login.html")
@@ -42,11 +42,11 @@ def register():
         district = request.form.get("district", "")
 
         if password != confirm:
-            flash("error", "password_mismatch")
+            flash("পাসওয়ার্ড মিলছে না।", "error")
             return redirect(url_for("auth.register"))
 
         if User.query.filter_by(email=email).first():
-            flash("error", "email_exists")
+            flash("এই ইমেইল দিয়ে আগে থেকেই অ্যাকাউন্ট আছে।", "error")
             return redirect(url_for("auth.register"))
 
         new_user = User(name=name, email=email, phone=phone, district=district)
@@ -54,7 +54,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        flash("success", "registration_success")
+        flash("নিবন্ধন সফল হয়েছে! এখন লগইন করুন।", "success")
         return redirect(url_for("auth.login"))
 
     return render_template("register.html")
@@ -64,7 +64,7 @@ def register():
 def forgot_password():
     if request.method == "POST":
         # Demo only: in production, send a real reset-token email here.
-        flash("success", "reset_link_sent")
+        flash("পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে (ডেমো)।", "success")
         return redirect(url_for("auth.login"))
     return render_template("forgot_password.html")
 
