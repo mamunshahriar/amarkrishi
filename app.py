@@ -69,7 +69,6 @@ def create_app():
 
 app = create_app()
 
-
 if __name__ == "__main__":
     # Local development only. In production, Gunicorn runs `app:app` directly
     # (see Procfile) and this block never executes.

@@ -24,12 +24,14 @@ class User(db.Model):
     profile_image = db.Column(db.String(255), default="default-farmer.png")
     language_pref = db.Column(db.String(2), default="bn")
     is_active = db.Column(db.Boolean, default=True)
+    is_verified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     disease_reports = db.relationship("DiseaseReport", backref="user", lazy=True, cascade="all, delete-orphan")
     recommendations = db.relationship("CropRecommendation", backref="user", lazy=True, cascade="all, delete-orphan")
     transactions = db.relationship("Transaction", backref="user", lazy=True, cascade="all, delete-orphan")
     notifications = db.relationship("Notification", backref="user", lazy=True, cascade="all, delete-orphan")
+    otp_codes = db.relationship("EmailOTP", backref="user", lazy=True, cascade="all, delete-orphan")
 
     def set_password(self, raw_password):
         self.password = generate_password_hash(raw_password)
@@ -133,6 +135,23 @@ class Transaction(db.Model):
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     note = db.Column(db.String(255))
     transaction_date = db.Column(db.Date, default=datetime.utcnow)
+
+
+class EmailOTP(db.Model):
+    """One-time codes for email verification and password-reset flows."""
+    __tablename__ = "email_otps"
+
+    otp_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    code = db.Column(db.String(6), nullable=False)
+    purpose = db.Column(db.String(20), nullable=False)  # 'verify_email' or 'reset_password'
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False)
+    attempts = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def is_expired(self):
+        return datetime.utcnow() > self.expires_at
 
 
 class Notification(db.Model):

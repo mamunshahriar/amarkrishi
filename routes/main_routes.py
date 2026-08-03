@@ -12,6 +12,10 @@ from models.models import (
     db, User, Crop, Disease, DiseaseReport, CropRecommendation,
     MarketPrice, Weather, Transaction, Notification
 )
+from services.leaf_validator import is_leaf_image
+from services.weather_service import get_live_weather, weather_alert_from
+from services.market_service import get_market_prices
+from services.ai_assistant import ask_gemini
 
 main_bp = Blueprint("main", __name__)
 
