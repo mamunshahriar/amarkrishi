@@ -3,6 +3,51 @@
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", function () {
+  // --- Dark mode toggle (persisted in localStorage, restored on every page) ---
+  const THEME_KEY = "amarkrishi-theme";
+  const themeToggleBtn = document.getElementById("themeToggle");
+
+  function applyThemeIcon() {
+    if (!themeToggleBtn) return;
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    const icon = themeToggleBtn.querySelector("i");
+    if (icon) icon.className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+  }
+
+  applyThemeIcon(); // base.html's inline script already applied the saved theme pre-paint
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      if (isDark) {
+        document.documentElement.removeAttribute("data-theme");
+        localStorage.setItem(THEME_KEY, "light");
+      } else {
+        document.documentElement.setAttribute("data-theme", "dark");
+        localStorage.setItem(THEME_KEY, "dark");
+      }
+      applyThemeIcon();
+      const settingsCheckbox = document.getElementById("darkModeCheckbox");
+      if (settingsCheckbox) settingsCheckbox.checked = !isDark;
+    });
+  }
+
+  // Settings page checkbox (if present) mirrors the same toggle
+  const settingsCheckbox = document.getElementById("darkModeCheckbox");
+  if (settingsCheckbox) {
+    settingsCheckbox.checked = document.documentElement.getAttribute("data-theme") === "dark";
+    settingsCheckbox.addEventListener("change", () => {
+      if (settingsCheckbox.checked) {
+        document.documentElement.setAttribute("data-theme", "dark");
+        localStorage.setItem(THEME_KEY, "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+        localStorage.setItem(THEME_KEY, "light");
+      }
+      applyThemeIcon();
+    });
+  }
+
   // --- Mobile sidebar toggle ---
   const toggleBtn = document.querySelector(".mobile-toggle");
   const sidebar = document.querySelector(".sidebar");
@@ -71,27 +116,6 @@ document.addEventListener("DOMContentLoaded", function () {
     requestAnimationFrame(() => { el.style.width = target + "%"; });
   });
 
-  // --- AI Assistant demo chat ---
-  const chatForm = document.getElementById("aiChatForm");
-  if (chatForm) {
-    chatForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const input = document.getElementById("aiChatInput");
-      const log = document.getElementById("aiChatLog");
-      if (!input.value.trim()) return;
-
-      const userMsg = document.createElement("div");
-      userMsg.className = "chat-msg user";
-      userMsg.textContent = input.value;
-      log.appendChild(userMsg);
-
-      const reply = document.createElement("div");
-      reply.className = "chat-msg bot";
-      reply.textContent = "This is a demo AI assistant response. Connect a real model to get live farming advice.";
-      setTimeout(() => log.appendChild(reply), 500);
-
-      input.value = "";
-      log.scrollTop = log.scrollHeight;
-    });
-  }
+  // NOTE: the AI Assistant chat form is wired directly in templates/ai_assistant.html
+  // (it needs page-specific translated strings), not here.
 });

@@ -23,7 +23,7 @@
   </div>
   <div class="flex-between" style="margin-bottom:14px;">
     <span>{{ t('dark_mode') }}</span>
-    <label><input type="checkbox"> Off</label>
+    <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="darkModeCheckbox"></label>
   </div>
   <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-outline btn-block">Change Password</a>
 </div>

@@ -1,0 +1,113 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="card chat-card">
+  <h3><i class="fa-solid fa-robot" style="color:var(--color-primary);"></i> {{ t('ai_assistant') }}</h3>
+  <p style="color:var(--color-text-muted);font-size:13px;margin-top:-8px;margin-bottom:14px;">{{ t('ai_assistant_desc') }}</p>
+
+  <div id="aiChatLog" class="chat-log">
+    {% if not history %}
+    <div class="chat-msg bot">
+      {{ t('ai_assistant_desc') }}. Ask me anything about crops, weather, diseases, or market prices!
+    </div>
+    {% endif %}
+    {% for turn in history %}
+      <div class="chat-msg {{ 'user' if turn.role == 'user' else 'bot' }}">{{ turn.text }}</div>
+    {% endfor %}
+  </div>
+
+  <div id="aiChatError" class="alert alert-error" style="display:none;"></div>
+
+  <form id="aiChatForm" style="display:flex;gap:10px;">
+    <input id="aiChatInput" type="text" class="form-control" placeholder="{{ t('type_your_message') }}" autocomplete="off">
+    <button type="submit" class="btn"><i class="fa-solid fa-paper-plane"></i></button>
+  </form>
+  <button type="button" id="aiChatReset" class="btn btn-outline btn-sm" style="margin-top:10px;">
+    <i class="fa-solid fa-rotate-left"></i> New conversation
+  </button>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const form = document.getElementById("aiChatForm");
+  const input = document.getElementById("aiChatInput");
+  const log = document.getElementById("aiChatLog");
+  const errorBox = document.getElementById("aiChatError");
+  const resetBtn = document.getElementById("aiChatReset");
+
+  function addMessage(text, role) {
+    const div = document.createElement("div");
+    div.className = "chat-msg " + (role === "user" ? "user" : "bot");
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function addTyping() {
+    const div = document.createElement("div");
+    div.className = "chat-msg bot chat-typing";
+    div.id = "aiTypingIndicator";
+    div.textContent = "…";
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById("aiTypingIndicator");
+    if (el) el.remove();
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const message = input.value.trim();
+    if (!message) return;
+
+    errorBox.style.display = "none";
+    addMessage(message, "user");
+    input.value = "";
+    input.disabled = true;
+    addTyping();
+
+    fetch("{{ url_for('main.ai_assistant_api') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: message }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        removeTyping();
+        if (data.success) {
+          addMessage(data.reply, "bot");
+        } else {
+          errorBox.textContent = {
+            ai_not_configured: "{{ t('ai_not_configured') }}",
+            ai_unavailable: "{{ t('ai_unavailable') }}",
+            ai_no_response: "{{ t('ai_no_response') }}",
+          }[data.error] || "{{ t('ai_unavailable') }}";
+          errorBox.style.display = "block";
+        }
+      })
+      .catch(() => {
+        removeTyping();
+        errorBox.textContent = "{{ t('ai_unavailable') }}";
+        errorBox.style.display = "block";
+      })
+      .finally(() => {
+        input.disabled = false;
+        input.focus();
+      });
+  });
+
+  resetBtn.addEventListener("click", function () {
+    fetch("{{ url_for('main.ai_assistant_reset') }}", { method: "POST" }).then(() => {
+      log.innerHTML = "";
+      errorBox.style.display = "none";
+      addMessage("{{ t('ai_assistant_desc') }}. Ask me anything about crops, weather, diseases, or market prices!", "bot");
+    });
+  });
+})();
+</script>
+{% endblock %}

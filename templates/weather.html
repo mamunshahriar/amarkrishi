@@ -3,9 +3,23 @@
 
 <div class="grid grid-2">
   <div class="card">
-    <h3><i class="fa-solid fa-cloud-sun-rain" style="color:var(--color-primary);"></i> {{ t('weather_today') }}
-      {% if selected %} - {{ selected.district }}{% endif %}
-    </h3>
+    <div class="flex-between">
+      <h3 style="margin-bottom:0;"><i class="fa-solid fa-cloud-sun-rain" style="color:var(--color-primary);"></i> {{ t('weather_today') }}
+        {% if selected %} - {{ selected.district }}{% endif %}
+      </h3>
+      {% if source %}
+      <span class="tag {{ 'tag-success' if source.label == 'live' else 'tag-medium' }}">
+        <i class="fa-solid {{ 'fa-satellite-dish' if source.label == 'live' else 'fa-database' }}"></i>
+        {{ t('live_data') if source.label == 'live' else t('local_data') }}
+      </span>
+      {% endif %}
+    </div>
+
+    <form method="GET" style="display:flex;gap:8px;margin:14px 0;">
+      <input type="text" name="q" class="form-control" placeholder="{{ t('search_city_district') }}" value="{{ query or '' }}">
+      <button type="submit" class="btn btn-sm">{{ t('search') }}</button>
+    </form>
+
     {% if selected %}
     <div class="grid grid-4">
       <div class="card" style="box-shadow:none;background:var(--color-bg);"><i class="fa-solid fa-temperature-half"></i><h2>{{ selected.temperature }}°C</h2><p style="font-size:11px;">{{ t('temperature') }}</p></div>

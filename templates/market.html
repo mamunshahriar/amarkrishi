@@ -3,7 +3,16 @@
 
 <div class="grid grid-2">
   <div class="card">
-    <h3><i class="fa-solid fa-arrow-trend-up" style="color:var(--color-primary);"></i> {{ t('nav_market') }}</h3>
+    <div class="flex-between" style="margin-bottom:10px;">
+      <h3 style="margin-bottom:0;"><i class="fa-solid fa-arrow-trend-up" style="color:var(--color-primary);"></i> {{ t('nav_market') }}</h3>
+      <span class="tag {{ 'tag-success' if market_meta.source == 'external_api' else 'tag-medium' }}">
+        <i class="fa-solid {{ 'fa-satellite-dish' if market_meta.source == 'external_api' else 'fa-database' }}"></i>
+        {{ t('live_data') if market_meta.source == 'external_api' else t('local_data') }}
+      </span>
+    </div>
+    {% if market_meta.last_updated %}
+    <p style="font-size:11.5px;color:var(--color-text-muted);margin-bottom:12px;">{{ t('last_updated') }}: {{ market_meta.last_updated }}</p>
+    {% endif %}
     <input type="text" class="form-control" placeholder="Search crop..." style="margin-bottom:12px;" onkeyup="filterTable(this.value)">
     <table id="marketTable">
       <thead>
@@ -12,14 +21,16 @@
       <tbody>
       {% for p in prices %}
         <tr>
-          <td>{{ p.crop.crop_name_bn if current_lang=='bn' else p.crop.crop_name }}</td>
+          <td>{{ p.crop_name }}</td>
           <td>৳{{ p.price_per_kg }}</td>
-          <td>৳{{ p.previous_price }}</td>
-          <td class="{{ 'price-up' if p.price_per_kg >= p.previous_price else 'price-down' }}">
-            {{ '+' if p.price_per_kg >= p.previous_price else '' }}{{ (((p.price_per_kg - p.previous_price) / p.previous_price) * 100) | round(1) if p.previous_price else 0 }}%
+          <td>৳{{ p.previous_price if p.previous_price else '—' }}</td>
+          <td class="{{ 'price-up' if (p.previous_price and p.price_per_kg >= p.previous_price) else 'price-down' }}">
+            {% if p.previous_price %}
+              {{ '+' if p.price_per_kg >= p.previous_price else '' }}{{ (((p.price_per_kg - p.previous_price) / p.previous_price) * 100) | round(1) }}%
+            {% else %}—{% endif %}
           </td>
           <td>{{ p.market_name }}</td>
-          <td><button class="btn btn-sm btn-outline" data-trend-crop="{{ p.crop_id }}">Trend</button></td>
+          <td>{% if p.crop_id %}<button class="btn btn-sm btn-outline" data-trend-crop="{{ p.crop_id }}">Trend</button>{% endif %}</td>
         </tr>
       {% else %}
         <tr><td colspan="6" style="color:var(--color-text-muted);">No market data available.</td></tr>

@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ t('app_name') }} - {{ t('tagline') }}</title>
 
+<!-- Applied before first paint so switching pages never flashes the wrong theme -->
+<script>
+(function () {
+  var saved = localStorage.getItem("amarkrishi-theme");
+  if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+})();
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -60,6 +68,10 @@
         &nbsp;|&nbsp;
         <a href="{{ url_for('main.set_language', lang='en') }}" style="{{ 'font-weight:700;color:var(--color-primary)' if current_lang=='en' }}">English</a>
       </div>
+
+      <button type="button" class="theme-toggle" id="themeToggle" title="{{ t('dark_mode') }}" aria-label="{{ t('dark_mode') }}">
+        <i class="fa-solid fa-moon"></i>
+      </button>
 
       <a href="#" class="notif-btn">
         <i class="fa-regular fa-bell"></i>

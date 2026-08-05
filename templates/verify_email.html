@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>(function(){var s=localStorage.getItem("amarkrishi-theme");if(s==="dark")document.documentElement.setAttribute("data-theme","dark");})();</script>
-<title>{{ t('forgot_password') }} - Amar Krishi</title>
+<title>{{ t('verify_your_email') }} - Amar Krishi</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -15,8 +15,8 @@
     <i class="fa-solid fa-moon"></i>
   </button>
   <div class="auth-card">
-    <div class="brand"><i class="fa-solid fa-key"></i><h2>{{ t('forgot_password') }}</h2></div>
-    <p class="sub">Enter your email and we'll send you a 6-digit reset code.</p>
+    <div class="brand"><i class="fa-solid fa-envelope-circle-check"></i><h2>{{ t('verify_your_email') }}</h2></div>
+    <p class="sub">{{ t('verify_email_sub') }} <strong>{{ email }}</strong></p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -26,16 +26,18 @@
       {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('auth.forgot_password') }}">
+    <form method="POST" action="{{ url_for('auth.verify_email') }}">
       <div class="form-group">
-        <label>{{ t('email') }}</label>
-        <input type="email" name="email" class="form-control" required>
+        <label>{{ t('enter_verification_code') }}</label>
+        <input type="text" name="code" class="form-control" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required autofocus style="letter-spacing:6px;font-size:20px;text-align:center;">
       </div>
-      <button type="submit" class="btn btn-block">Send Reset Code</button>
+      <button type="submit" class="btn btn-block">{{ t('verify') }}</button>
     </form>
 
     <div class="auth-footer">
-      <a href="{{ url_for('auth.login') }}"><i class="fa-solid fa-arrow-left"></i> {{ t('login') }}</a>
+      <a href="{{ url_for('auth.resend_verification') }}">{{ t('resend_code') }}</a>
+      &nbsp;|&nbsp;
+      <a href="{{ url_for('auth.login') }}">{{ t('back_to_login') }}</a>
     </div>
   </div>
 </div>
