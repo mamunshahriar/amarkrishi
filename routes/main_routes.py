@@ -104,6 +104,17 @@ def disease_detection():
                 save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
                 file.save(save_path)
 
+                # --- Step 1: validate this is actually a plant leaf before ---
+                # --- running disease prediction on it.                    ---
+                leaf_ok, _leaf_confidence, _reason = is_leaf_image(save_path)
+
+                if not leaf_ok:
+                    os.remove(save_path)
+                    flash("error", "not_a_leaf_image")
+                    history = DiseaseReport.query.filter_by(user_id=session["user_id"]).order_by(DiseaseReport.detection_date.desc()).limit(5).all()
+                    return render_template("disease.html", result=None, history=history)
+
+                # --- Step 2: existing disease prediction model (unchanged) ---
                 # Placeholder AI prediction (replace with real TensorFlow/Teachable Machine model)
                 disease = Disease.query.order_by(db.func.rand()).first()
                 confidence = round(random.uniform(82, 98), 2)
@@ -131,8 +142,30 @@ def disease_detection():
 @main_bp.route("/market-prices")
 @login_required
 def market_prices():
-    prices = MarketPrice.query.join(Crop).all()
-    return render_template("market.html", prices=prices)
+    raw_prices, meta = get_market_prices()
+
+    # Normalize both local ORM rows and external-API dicts into one shape
+    # so the template never needs to know which source it came from.
+    prices = []
+    for p in raw_prices:
+        if isinstance(p, dict):
+            prices.append({
+                "crop_id": None,
+                "crop_name": p.get("crop_name") or "—",
+                "price_per_kg": p.get("price_per_kg"),
+                "previous_price": p.get("previous_price"),
+                "market_name": p.get("market_name") or "N/A",
+            })
+        else:
+            prices.append({
+                "crop_id": p.crop_id,
+                "crop_name": (p.crop.crop_name_bn if session.get("lang") == "bn" and p.crop and p.crop.crop_name_bn else (p.crop.crop_name if p.crop else "—")),
+                "price_per_kg": p.price_per_kg,
+                "previous_price": p.previous_price,
+                "market_name": p.market_name,
+            })
+
+    return render_template("market.html", prices=prices, market_meta=meta)
 
 
 @main_bp.route("/api/market-trend/<int:crop_id>")
@@ -152,8 +185,29 @@ def market_trend_api(crop_id):
 def weather():
     user = current_user()
     records = Weather.query.all()
-    selected = Weather.query.filter_by(district=user.district).first() or (records[0] if records else None)
-    return render_template("weather.html", records=records, selected=selected, districts=DISTRICTS)
+    place = request.args.get("q", "").strip() or user.district or "Dhaka"
+
+    live = get_live_weather(place)
+    if live:
+        alert_type, alert_severity = weather_alert_from(live["condition"], live["rain_probability"])
+        selected = {
+            "district": live["district"],
+            "temperature": round(live["temperature"], 1) if live["temperature"] is not None else None,
+            "humidity": live["humidity"],
+            "wind_speed": round(live["wind_speed"], 1) if live["wind_speed"] is not None else None,
+            "rain_probability": live["rain_probability"],
+            "alert_type": alert_type,
+            "alert_severity": alert_severity,
+            "best_irrigation_time": "Early morning (6-8 AM) or evening (5-7 PM)",
+            "condition": live["condition"],
+        }
+        source = {"label": "live", "fetched_at": live["fetched_at"]}
+    else:
+        db_record = Weather.query.filter_by(district=place).first() or Weather.query.filter_by(district=user.district).first() or (records[0] if records else None)
+        selected = db_record
+        source = {"label": "local", "fetched_at": db_record.recorded_at if db_record else None}
+
+    return render_template("weather.html", records=records, selected=selected, districts=DISTRICTS, source=source, query=place)
 
 
 # ---------------------------------------------------------
@@ -255,7 +309,34 @@ def subsidy_loans():
 @main_bp.route("/ai-assistant")
 @login_required
 def ai_assistant():
-    return render_template("feature_placeholder.html", page_key="nav_assistant", icon="fa-robot")
+    history = session.get("ai_chat_history", [])
+    return render_template("ai_assistant.html", history=history)
+
+
+@main_bp.route("/api/ai-assistant", methods=["POST"])
+@login_required
+def ai_assistant_api():
+    message = (request.json or {}).get("message", "").strip() if request.is_json else request.form.get("message", "").strip()
+    if not message:
+        return jsonify({"success": False, "error": "empty_message"}), 400
+
+    history = session.get("ai_chat_history", [])
+    success, reply = ask_gemini(message, history)
+
+    if success:
+        history.append({"role": "user", "text": message})
+        history.append({"role": "assistant", "text": reply})
+        session["ai_chat_history"] = history[-16:]  # keep last 8 exchanges
+        return jsonify({"success": True, "reply": reply})
+
+    return jsonify({"success": False, "error": reply})
+
+
+@main_bp.route("/api/ai-assistant/reset", methods=["POST"])
+@login_required
+def ai_assistant_reset():
+    session.pop("ai_chat_history", None)
+    return jsonify({"success": True})
 
 
 @main_bp.route("/community-forum")

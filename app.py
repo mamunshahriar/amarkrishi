@@ -14,6 +14,7 @@ from flask import Flask, session, request
 from config import get_config
 from models.models import db, User
 from translations import get_text
+from services.mail_service import mail
 from routes.auth_routes import auth_bp
 from routes.main_routes import main_bp
 
@@ -33,6 +34,7 @@ def create_app():
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     db.init_app(app)
+    mail.init_app(app)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -68,6 +70,7 @@ def create_app():
 
 
 app = create_app()
+
 
 if __name__ == "__main__":
     # Local development only. In production, Gunicorn runs `app:app` directly
