@@ -35,6 +35,9 @@ def create_app():
 
     db.init_app(app)
     mail.init_app(app)
+    app.logger.info(f"MAIL_CONFIGURED={app.config.get('MAIL_CONFIGURED')}")
+    app.logger.info(f"MAIL_USERNAME={app.config.get('MAIL_USERNAME')}")
+    app.logger.info(f"MAIL_DEFAULT_SENDER={app.config.get('MAIL_DEFAULT_SENDER')}")
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
