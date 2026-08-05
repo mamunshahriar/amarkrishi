@@ -34,7 +34,14 @@ def create_app():
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     db.init_app(app)
-    mail.init_app(app)
+
+    from sqlalchemy import text
+
+    with app.app_context():
+         result = db.session.execute(text("SELECT DATABASE();"))
+         app.logger.info(f"Connected Database: {result.scalar()}")
+         mail.init_app(app)
+
     app.logger.info(f"MAIL_CONFIGURED={app.config.get('MAIL_CONFIGURED')}")
     app.logger.info(f"MAIL_USERNAME={app.config.get('MAIL_USERNAME')}")
     app.logger.info(f"MAIL_DEFAULT_SENDER={app.config.get('MAIL_DEFAULT_SENDER')}")
