@@ -30,21 +30,22 @@ def create_app():
     )
     app.logger.setLevel(app.config.get("LOG_LEVEL", "INFO"))
 
+    # --- Startup diagnostics (never logs secret values, only whether env
+    # vars made it into the config) — check these in the Render deploy log
+    # right after boot to confirm your environment variables actually loaded.
+    gemini_key = app.config.get("GEMINI_API_KEY") or ""
+    app.logger.info(
+        "Startup check: GEMINI_API_KEY %s (len=%d), MAIL_CONFIGURED=%s",
+        "present" if gemini_key else "MISSING/EMPTY",
+        len(gemini_key),
+        app.config.get("MAIL_CONFIGURED"),
+    )
+
     # Ensure upload folder exists (created automatically if missing).
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     db.init_app(app)
-
-    from sqlalchemy import text
-
-    with app.app_context():
-         result = db.session.execute(text("SELECT DATABASE();"))
-         app.logger.info(f"Connected Database: {result.scalar()}")
-         mail.init_app(app)
-
-    app.logger.info(f"MAIL_CONFIGURED={app.config.get('MAIL_CONFIGURED')}")
-    app.logger.info(f"MAIL_USERNAME={app.config.get('MAIL_USERNAME')}")
-    app.logger.info(f"MAIL_DEFAULT_SENDER={app.config.get('MAIL_DEFAULT_SENDER')}")
+    mail.init_app(app)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
