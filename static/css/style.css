@@ -50,7 +50,7 @@ html[data-theme="dark"] .hero-banner {
 }
 
 html[data-theme="dark"] .tag-high, html[data-theme="dark"] .tag-danger { background: #3a1f1a; }
-html[data-theme="dark"] .tag-medium, html[data-theme="dark"] .tag-warning { background: #3a301a; }
+html[data-theme="dark"] .tag-medium, html[data-theme="dark"] .tag-warning { background: #3a301a; color: #f2c230; }
 html[data-theme="dark"] .tag-low, html[data-theme="dark"] .tag-success { background: #16301f; }
 html[data-theme="dark"] .alert-success { background: #16301f; }
 html[data-theme="dark"] .alert-error { background: #3a1f1a; }
@@ -58,6 +58,14 @@ html[data-theme="dark"] .auth-wrapper {
   background: linear-gradient(135deg, #101a13, #191510);
 }
 html[data-theme="dark"] .auth-card { background: var(--color-card); }
+
+/* The hero banner keeps its light cream/green gradient background in both
+   themes (it's an accent panel, not the page surface) — but its text
+   colors were hardcoded to dark greens for that light background, so in
+   dark mode they need to flip to light colors or they become unreadable. */
+html[data-theme="dark"] .hero-banner .hero-text h2 { color: var(--color-text); }
+html[data-theme="dark"] .hero-banner .hero-text h2 span { color: var(--color-primary); }
+html[data-theme="dark"] .hero-banner .hero-text p { color: #cfd6d0; }
 
 .theme-toggle {
   display: flex;
@@ -355,11 +363,17 @@ table th { color: var(--color-text-muted); font-weight: 600; font-size: 12.5px; 
   font-family: inherit;
   font-size: 14px;
   background: var(--color-bg);
+  color: var(--color-text);
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background 0.2s ease, color 0.2s ease;
 }
+.form-control::placeholder { color: var(--color-text-muted); opacity: 1; }
 .form-control:focus { border-color: var(--color-primary); }
 select.form-control { appearance: none; }
+/* Dropdown option lists follow the OS by default in most browsers, which
+   can render as light-on-light in dark mode on some platforms — force it
+   to match the app's own dark surface instead of guessing at the OS theme. */
+html[data-theme="dark"] select.form-control option { background: var(--color-card); color: var(--color-text); }
 
 /* ---------- Auth Pages ---------- */
 .auth-wrapper {

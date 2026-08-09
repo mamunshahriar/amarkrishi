@@ -32,7 +32,17 @@
 <div class="grid grid-3">
   {% for crop in crops %}
   <div class="card">
-    <img src="https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?w=400&q=60" style="border-radius:10px;height:140px;object-fit:cover;margin-bottom:12px;" alt="{{ crop.crop_name }}">
+    <div style="position:relative;margin-bottom:12px;">
+      <img src="{{ url_for('static', filename=crop.image) if crop.image else url_for('static', filename='images/default-crop.svg') }}"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;" alt="{{ crop.crop_name }}">
+      <form method="POST" action="{{ url_for('main.crop_advisory_image', crop_id=crop.crop_id) }}" enctype="multipart/form-data"
+            style="position:absolute;bottom:8px;right:8px;">
+        <label style="background:rgba(0,0,0,0.55);color:#fff;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;" title="{{ t('change_image') }}">
+          <i class="fa-solid fa-camera"></i>
+          <input type="file" name="crop_image" accept="image/png,image/jpeg,image/jpg" style="display:none;" onchange="this.form.submit()">
+        </label>
+      </form>
+    </div>
     <div class="flex-between">
       <h3 style="margin-bottom:0;">{{ crop.crop_name_bn if current_lang=='bn' else crop.crop_name }}</h3>
       <span class="tag tag-{{ 'high' if crop.profit_level=='High' else ('medium' if crop.profit_level=='Medium' else 'low') }}">{{ crop.profit_level }}</span>

@@ -22,6 +22,17 @@ main_bp = Blueprint("main", __name__)
 DISTRICTS = ["Dhaka", "Rajshahi", "Khulna", "Rangpur", "Barisal", "Sylhet", "Chattogram", "Mymensingh"]
 
 
+def _current_hero_image_url():
+    """The dashboard hero photo defaults to an on-brand illustration until
+    the user uploads their own via Settings, so it never breaks."""
+    site_dir = os.path.join(current_app.static_folder, "uploads", "site")
+    if os.path.isdir(site_dir):
+        for fname in os.listdir(site_dir):
+            if fname.startswith("hero."):
+                return url_for("static", filename=f"uploads/site/{fname}")
+    return url_for("static", filename="images/default-hero.svg")
+
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -61,6 +72,7 @@ def dashboard():
         income=income,
         expense=expense,
         profit=income - expense,
+        hero_image_url=_current_hero_image_url(),
     )
 
 
@@ -86,6 +98,34 @@ def crop_advisory():
             results = Crop.query.limit(4).all()
 
     return render_template("crop.html", crops=results, districts=DISTRICTS)
+
+
+@main_bp.route("/crop-advisory/<int:crop_id>/image", methods=["POST"])
+@login_required
+def crop_advisory_image(crop_id):
+    """Lets a logged-in user replace the stock photo on a crop card with
+    their own picture, so different crops don't all show the same image."""
+    crop = Crop.query.get_or_404(crop_id)
+    file = request.files.get("crop_image")
+
+    if not file or file.filename == "":
+        flash("error", "invalid_image")
+        return redirect(request.referrer or url_for("main.crop_advisory"))
+
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in current_app.config["ALLOWED_IMAGE_EXTENSIONS"]:
+        flash("error", "invalid_image")
+        return redirect(request.referrer or url_for("main.crop_advisory"))
+
+    crops_dir = os.path.join(current_app.static_folder, "uploads", "crops")
+    os.makedirs(crops_dir, exist_ok=True)
+
+    filename = secure_filename(f"crop_{crop_id}.{ext}")
+    file.save(os.path.join(crops_dir, filename))
+    crop.image = f"uploads/crops/{filename}"
+    db.session.commit()
+
+    return redirect(request.referrer or url_for("main.crop_advisory"))
 
 
 # ---------------------------------------------------------
@@ -239,6 +279,25 @@ def profile():
 def settings():
     user = current_user()
     if request.method == "POST":
+        # Two different forms share this endpoint: the hero-image uploader
+        # and the language/notification preferences form.
+        if "hero_image" in request.files and request.files["hero_image"].filename:
+            file = request.files["hero_image"]
+            ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+            if ext in current_app.config["ALLOWED_IMAGE_EXTENSIONS"]:
+                site_dir = os.path.join(current_app.static_folder, "uploads", "site")
+                os.makedirs(site_dir, exist_ok=True)
+                # Remove any previous hero.* file so old formats don't linger
+                # and dashboard() always finds exactly one.
+                for existing in os.listdir(site_dir):
+                    if existing.startswith("hero."):
+                        os.remove(os.path.join(site_dir, existing))
+                file.save(os.path.join(site_dir, f"hero.{ext}"))
+                flash("success", "settings_updated")
+            else:
+                flash("error", "invalid_image")
+            return redirect(url_for("main.settings"))
+
         lang = request.form.get("language")
         if lang in ("en", "bn"):
             user.language_pref = lang

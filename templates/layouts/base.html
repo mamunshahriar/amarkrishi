@@ -16,6 +16,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon.png') }}">
+<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% block extra_css %}{% endblock %}
 </head>
@@ -80,7 +83,7 @@
 
       {% if nav_user %}
       <a href="{{ url_for('main.profile') }}" class="user-chip">
-        <img src="{{ url_for('static', filename='images/' + (nav_user.profile_image or 'default-farmer.png')) }}" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed={{ nav_user.name }}'">
+        <img src="{{ url_for('static', filename='images/' + (nav_user.profile_image or 'default-farmer.svg')) }}" onerror="this.src='https://api.dicebear.com/7.x/initials/svg?seed={{ nav_user.name }}'">
         <div>
           <div class="name">{{ nav_user.name }}</div>
           <div class="role">{{ nav_user.district or '' }}</div>

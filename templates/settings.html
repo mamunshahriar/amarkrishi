@@ -26,6 +26,17 @@
     <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="darkModeCheckbox"></label>
   </div>
   <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-outline btn-block">Change Password</a>
+
+  <hr style="margin:22px 0;border:none;border-top:1px solid var(--color-border);">
+
+  <form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>{{ t('hero_image_setting') }}</label>
+      <p style="font-size:12px;color:var(--color-text-muted);margin:-4px 0 10px;">{{ t('hero_image_hint') }}</p>
+      <input type="file" name="hero_image" class="form-control" accept="image/png,image/jpeg,image/jpg">
+    </div>
+    <button type="submit" class="btn btn-outline">{{ t('upload') }}</button>
+  </form>
 </div>
 
 {% endblock %}
