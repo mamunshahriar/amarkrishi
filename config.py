@@ -73,13 +73,16 @@ class Config:
     MARKET_API_URL = os.environ.get("MARKET_API_URL", "")
     MARKET_API_KEY = os.environ.get("MARKET_API_KEY", "")
 
-    # --- AI Assistant (Google Gemini free tier) ---
-    # Create a free key at https://aistudio.google.com/app/apikey
-    # NOTE: gemini-2.0-flash was deprecated and shut down by Google on
-    # June 1, 2026 (free-tier quota is now 0 for it, causing 429s).
-    # gemini-2.5-flash is the current stable, GA, free-tier model as of
-    # this writing — update GEMINI_MODEL in Render's env vars if Google
-    # deprecates this one too in the future instead of editing code.
+    # --- AI Assistant (Groq free tier — simple Bearer-token auth, no SDK) ---
+    # Create a free key at https://console.groq.com/keys (no credit card
+    # needed). Key format is always "gsk_...".
+    GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+    GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+    # --- Google Gemini (kept for reference / optional future use) ---
+    # Not used by default anymore — Gemini's mid-2026 API key migration
+    # ("Auth keys", AQ...) proved unreliable in practice. See GROQ_* above.
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
     GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
     GEMINI_API_URL = (

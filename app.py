@@ -33,11 +33,11 @@ def create_app():
     # --- Startup diagnostics (never logs secret values, only whether env
     # vars made it into the config) — check these in the Render deploy log
     # right after boot to confirm your environment variables actually loaded.
-    gemini_key = app.config.get("GEMINI_API_KEY") or ""
+    groq_key = app.config.get("GROQ_API_KEY") or ""
     app.logger.info(
-        "Startup check: GEMINI_API_KEY %s (len=%d), MAIL_CONFIGURED=%s",
-        "present" if gemini_key else "MISSING/EMPTY",
-        len(gemini_key),
+        "Startup check: GROQ_API_KEY %s (len=%d), MAIL_CONFIGURED=%s",
+        "present" if groq_key else "MISSING/EMPTY",
+        len(groq_key),
         app.config.get("MAIL_CONFIGURED"),
     )
 

@@ -1,18 +1,17 @@
 """
 Amar Krishi - AI Assistant Service
-Wraps Google's official `google-genai` SDK (https://aistudio.google.com/app/apikey).
+Wraps Groq's free, OpenAI-compatible chat API (https://console.groq.com).
 
-v2: Google migrated Gemini API keys from the old "Standard" format
-(`AIzaSy...`, plain `?key=` REST auth) to the new "Auth key" format
-(`AQ.Ab...`) starting mid-2026. Auth keys are not reliably usable with
-hand-rolled REST calls (`?key=` query param or `Authorization: Bearer`
-both fail for many accounts) — Google's own docs now recommend the
-official SDK instead, which is what this version does. Standard keys
-(`AIzaSy...`) still work fine here too, since the SDK accepts both.
+v3: Gemini's API key rollout (mid-2026) turned out to be unreliable in
+practice — the new "Auth key" format (`AQ.Ab...`) frequently fails with
+raw REST calls and even the official SDK for some accounts, and the
+2.0-era free-tier models were deprecated, causing 429s. Groq is a much
+simpler, more predictable free option: plain `Authorization: Bearer`
+auth with a stable `gsk_...` key format, no SDK required, generous free
+daily quota, and no credit card needed.
 """
+import requests
 from flask import current_app
-from google import genai
-from google.genai import types
 
 SYSTEM_PROMPT = (
     "You are the Amar Krishi AI Assistant, a helpful farming advisor for "
@@ -25,54 +24,62 @@ SYSTEM_PROMPT = (
 )
 MAX_HISTORY_TURNS = 8  # last N exchanges kept for context
 
-_clients = {}  # api_key -> genai.Client, so we don't rebuild a client per request
 
-
-def _get_client():
-    api_key = current_app.config.get("GEMINI_API_KEY")
-    if not api_key:
-        return None
-    if api_key not in _clients:
-        _clients[api_key] = genai.Client(api_key=api_key)
-    return _clients[api_key]
-
-
-def _build_contents(message, history):
-    """Build SDK `Content` objects from session chat history + new message."""
-    contents = []
+def _build_messages(message, history):
+    """Build an OpenAI-style `messages` array from session history + the new message."""
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for turn in history[-MAX_HISTORY_TURNS:]:
-        role = "user" if turn.get("role") == "user" else "model"
-        contents.append(types.Content(role=role, parts=[types.Part.from_text(text=turn.get("text", ""))]))
-    contents.append(types.Content(role="user", parts=[types.Part.from_text(text=message)]))
-    return contents
+        role = "user" if turn.get("role") == "user" else "assistant"
+        messages.append({"role": role, "content": turn.get("text", "")})
+    messages.append({"role": "user", "content": message})
+    return messages
 
 
-def ask_gemini(message, history=None):
+def ask_ai_assistant(message, history=None):
     """
-    Send a message (+ optional prior turns) to Gemini.
+    Send a message (+ optional prior turns) to Groq.
     Returns (success: bool, reply_or_error_message: str).
     """
     history = history or []
-    client = _get_client()
-    if client is None:
+    api_key = current_app.config.get("GROQ_API_KEY")
+    if not api_key:
         return False, "ai_not_configured"
 
-    model = current_app.config.get("GEMINI_MODEL", "gemini-2.0-flash")
+    url = current_app.config["GROQ_API_URL"]
+    model = current_app.config.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
     try:
-        response = client.models.generate_content(
-            model=model,
-            contents=_build_contents(message, history),
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.6,
-                max_output_tokens=512,
-            ),
+        resp = requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model,
+                "messages": _build_messages(message, history),
+                "temperature": 0.6,
+                "max_tokens": 512,
+            },
+            timeout=20,
         )
-        text = (getattr(response, "text", None) or "").strip()
+        if resp.status_code != 200:
+            current_app.logger.error("Groq API error %s: %s", resp.status_code, resp.text[:500])
+            return False, "ai_unavailable"
+
+        data = resp.json()
+        choices = data.get("choices", [])
+        if not choices:
+            return False, "ai_no_response"
+
+        text = (choices[0].get("message", {}).get("content") or "").strip()
         if not text:
             return False, "ai_no_response"
         return True, text
-    except Exception as exc:
-        current_app.logger.error("Gemini API error: %s", exc)
+    except requests.exceptions.RequestException as exc:
+        current_app.logger.error("Groq request failed: %s", exc)
         return False, "ai_unavailable"
+
+
+# Backwards-compatible alias — routes/main_routes.py can import either name.
+ask_gemini = ask_ai_assistant
