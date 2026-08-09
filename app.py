@@ -10,7 +10,7 @@ Production notes:
 
 import os
 import logging
-from flask import Flask, session, request
+from flask import Flask, session, request, url_for
 from config import get_config
 from models.models import db, User
 from translations import get_text
@@ -71,6 +71,25 @@ def create_app():
             if user:
                 unread_count = Notification.query.filter_by(user_id=user.user_id, status="Unread").count()
         return dict(nav_user=user, unread_count=unread_count)
+
+    # --- Per-crop photo lookup: drop a file named after the crop into
+    # static/images/crops/ (e.g. "rice.jpg" for a crop named "Rice") and it
+    # shows automatically — no upload UI, no database field to manage.
+    # Falls back to a generic illustration until a matching file exists.
+    @app.context_processor
+    def inject_crop_image_helper():
+        import re
+
+        def crop_image_url(crop):
+            slug = re.sub(r"[^a-z0-9]+", "-", (crop.crop_name or "").lower()).strip("-")
+            crops_dir = os.path.join(app.static_folder, "images", "crops")
+            for ext in ("jpg", "jpeg", "png", "webp"):
+                candidate = os.path.join(crops_dir, f"{slug}.{ext}")
+                if slug and os.path.isfile(candidate):
+                    return url_for("static", filename=f"images/crops/{slug}.{ext}")
+            return url_for("static", filename="images/default-crop.svg")
+
+        return dict(crop_image_url=crop_image_url)
 
     # --- Basic health check endpoint for Render / uptime monitors ---
     @app.route("/healthz")

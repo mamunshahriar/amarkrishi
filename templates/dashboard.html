@@ -1,7 +1,7 @@
 {% extends "layouts/base.html" %}
 {% block content %}
 
-<div class="hero-banner">
+<div class="hero-banner" style="--hero-bg-url: url('{{ hero_image_url }}');">
   <div class="hero-text">
     <h2>{{ t('hero_title_1') }}<span>{{ t('hero_title_2') }}</span></h2>
     <p>{{ t('hero_subtitle') }}</p>
@@ -14,7 +14,7 @@
       <div class="stat"><i class="fa-regular fa-clock"></i><div><strong>24/7</strong><span>{{ t('ai_support') }}</span></div></div>
     </div>
   </div>
-  <img src="{{ hero_image_url }}" alt="Farmer" style="max-width:340px;border-radius:20px;object-fit:cover;">
+</div>
 </div>
 
 <div class="quick-features">

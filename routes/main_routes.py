@@ -23,14 +23,14 @@ DISTRICTS = ["Dhaka", "Rajshahi", "Khulna", "Rangpur", "Barisal", "Sylhet", "Cha
 
 
 def _current_hero_image_url():
-    """The dashboard hero photo defaults to an on-brand illustration until
-    the user uploads their own via Settings, so it never breaks."""
+    """The dashboard hero background defaults to the bundled farmer photo
+    until the user uploads their own via Settings."""
     site_dir = os.path.join(current_app.static_folder, "uploads", "site")
     if os.path.isdir(site_dir):
         for fname in os.listdir(site_dir):
             if fname.startswith("hero."):
                 return url_for("static", filename=f"uploads/site/{fname}")
-    return url_for("static", filename="images/default-hero.svg")
+    return url_for("static", filename="images/hero-farming-bg.jpg")
 
 
 def login_required(f):
@@ -98,34 +98,6 @@ def crop_advisory():
             results = Crop.query.limit(4).all()
 
     return render_template("crop.html", crops=results, districts=DISTRICTS)
-
-
-@main_bp.route("/crop-advisory/<int:crop_id>/image", methods=["POST"])
-@login_required
-def crop_advisory_image(crop_id):
-    """Lets a logged-in user replace the stock photo on a crop card with
-    their own picture, so different crops don't all show the same image."""
-    crop = Crop.query.get_or_404(crop_id)
-    file = request.files.get("crop_image")
-
-    if not file or file.filename == "":
-        flash("error", "invalid_image")
-        return redirect(request.referrer or url_for("main.crop_advisory"))
-
-    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
-    if ext not in current_app.config["ALLOWED_IMAGE_EXTENSIONS"]:
-        flash("error", "invalid_image")
-        return redirect(request.referrer or url_for("main.crop_advisory"))
-
-    crops_dir = os.path.join(current_app.static_folder, "uploads", "crops")
-    os.makedirs(crops_dir, exist_ok=True)
-
-    filename = secure_filename(f"crop_{crop_id}.{ext}")
-    file.save(os.path.join(crops_dir, filename))
-    crop.image = f"uploads/crops/{filename}"
-    db.session.commit()
-
-    return redirect(request.referrer or url_for("main.crop_advisory"))
 
 
 # ---------------------------------------------------------
