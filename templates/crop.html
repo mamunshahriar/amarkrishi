@@ -1,82 +1,178 @@
+<!--
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="card" style="margin-bottom:18px;">
+  <h3><i class="fa-solid fa-seedling" style="color:var(--color-primary);"></i> {{ t('nav_crop_advisory') }}</h3>
+  <form method="POST" class="grid grid-4" style="align-items:end;">
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('soil_type') }}</label>
+      <select name="soil_type" class="form-control">
+        <option value="">--</option>
+        <option>Clay</option><option>Loamy</option><option>Sandy Loam</option><option>Sandy</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('district') }}</label>
+      <select name="district" class="form-control">
+        {% for d in districts %}<option>{{ d }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('season') }}</label>
+      <select name="season" class="form-control">
+        <option value="">--</option>
+        <option>Kharif</option><option>Rabi</option><option>Summer</option>
+      </select>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-magnifying-glass"></i> {{ t('suggest_crops') }}</button>
+  </form>
+</div>
+
+{% if crops %}
+<div class="grid grid-3">
+  {% for crop in crops %}
+  <div class="card">
+    <img src="{{ crop_image_url(crop) }}"
+         style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;" alt="{{ crop.crop_name }}">
+    <div class="flex-between">
+      <h3 style="margin-bottom:0;">{{ crop.crop_name_bn if current_lang=='bn' else crop.crop_name }}</h3>
+      <span class="tag tag-{{ 'high' if crop.profit_level=='High' else ('medium' if crop.profit_level=='Medium' else 'low') }}">{{ crop.profit_level }}</span>
+    </div>
+    <p style="font-size:12.5px;color:var(--color-text-muted);margin:8px 0;">{{ crop.description }}</p>
+    <table>
+      <tr><td>{{ t('season') }}</td><td>{{ crop.season }}</td></tr>
+      <tr><td>Yield</td><td>{{ crop.expected_yield }}</td></tr>
+      <tr><td>Growing Time</td><td>{{ crop.growing_time_days }} days</td></tr>
+      <tr><td>Market Demand</td><td>{{ crop.market_demand }}</td></tr>
+    </table>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p style="color:var(--color-text-muted);">Fill out the form above to get personalized crop recommendations.</p>
+{% endif %}
+
+{% endblock %}
+-->
+
+
+
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="card" style="margin-bottom:18px;">
+  <h3><i class="fa-solid fa-seedling" style="color:var(--color-primary);"></i> {{ t('nav_crop_advisory') }}</h3>
+  <form method="POST" class="grid grid-4" style="align-items:end;">
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('soil_type') }}</label>
+      <select name="soil_type" class="form-control">
+        <option value="">--</option>
+        <option>Clay</option><option>Loamy</option><option>Sandy Loam</option><option>Sandy</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('district') }}</label>
+      <select name="district" class="form-control">
+        {% for d in districts %}<option>{{ d }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom:0;">
+      <label>{{ t('season') }}</label>
+      <select name="season" class="form-control">
+        <option value="">--</option>
+        <option>Kharif</option><option>Rabi</option><option>Summer</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn">
+      <i class="fa-solid fa-magnifying-glass"></i> {{ t('suggest_crops') }}
+    </button>
+  </form>
+</div>
+
+
 {% if crops %}
 <div class="grid grid-3">
 
   {% for crop in crops %}
 
-  {# =========================================================
-     CROP IMAGE MAPPING
-     ========================================================= #}
+  <div class="card">
 
-  {% set crop_name = crop.crop_name|lower|trim %}
+    {% set crop_name = crop.crop_name|lower %}
 
-  {% if 'rice' in crop_name or 'paddy' in crop_name or 'boro' in crop_name or 'aman' in crop_name or 'aus' in crop_name %}
-    {% set crop_img = 'https://innspubnet.wordpress.com/wp-content/uploads/2017/04/oryza-sativa.jpg?w=714' %}
+    {% if 'rice' in crop_name or 'paddy' in crop_name or 'boro' in crop_name or 'aman' in crop_name or 'aus' in crop_name %}
 
-  {% elif 'jute' in crop_name %}
-    {% set crop_img = 'https://media.istockphoto.com/id/1070790376/photo/farmer-loading-jute-fiber-in-west-bengal-india.jpg?s=612x612&w=0&k=20&c=YBhW-oqYNDU5-zKSpyOVBeYwrvyZany8SZwVwInWTGo=' %}
+      <img src="https://innspubnet.wordpress.com/wp-content/uploads/2017/04/oryza-sativa.jpg?w=714"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
-  {% elif 'brinjal' in crop_name or 'eggplant' in crop_name or 'aubergine' in crop_name %}
-    {% set crop_img = 'https://www.allthatgrows.in/cdn/shop/articles/Feat_Image-Brinjal_5d700c0d-788c-4614-b310-feed4be746d3.jpg?v=1753256921' %}
+    {% elif 'jute' in crop_name %}
 
-  {% elif 'potato' in crop_name or 'alu' in crop_name %}
-    {% set crop_img = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnAIGU6G7qY8z82CKg-8vLVtnPSVy8rBfodiVKdiW5tYSp5MI6dYb4Ve8&s=10' %}
+      <img src="https://media.istockphoto.com/id/1070790376/photo/farmer-loading-jute-fiber-in-west-bengal-india.jpg?s=612x612&w=0&k=20&c=YBhW-oqYNDU5-zKSpyOVBeYwrvyZany8SZwVwInWTGo="
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
-  {% elif 'wheat' in crop_name or 'gandum' in crop_name %}
-    {% set crop_img = 'https://www.sciencing.com/sciencing/what-are-the-six-stages-of-the-life-cycle-of-a-wheat-plant-13428191/78485816.jpg' %}
+    {% elif 'brinjal' in crop_name or 'eggplant' in crop_name %}
 
-  {% elif 'maize' in crop_name or 'corn' in crop_name %}
-    {% set crop_img = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxP2iqRlYsdoujrjUrk2GbY1ctqGPLf21riGp5Y56mkI4mHl3cmbt8wx59&s=10' %}
+      <img src="https://www.allthatgrows.in/cdn/shop/articles/Feat_Image-Brinjal_5d700c0d-788c-4614-b310-feed4be746d3.jpg?v=1753256921"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
-  {% elif 'garlic' in crop_name %}
-    {% set crop_img = 'https://kellogggarden.com/wp-content/uploads/2017/10/growing-garlic-1.jpg' %}
+    {% elif 'potato' in crop_name %}
 
-  {% elif 'tomato' in crop_name %}
-    {% set crop_img = 'https://hips.hearstapps.com/hmg-prod/images/close-up-of-tomatoes-growing-on-plant-ukraine-royalty-free-image-1747409380.pjpeg' %}
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnAIGU6G7qY8z82CKg-8vLVtnPSVy8rBfodiVKdiW5tYSp5MI6dYb4Ve8&s=10"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
-  {# Similar crops can use a related crop image #}
-  {% elif 'onion' in crop_name or 'shallot' in crop_name %}
-    {% set crop_img = 'https://kellogggarden.com/wp-content/uploads/2017/10/growing-garlic-1.jpg' %}
+    {% elif 'wheat' in crop_name %}
 
-  {% elif 'chili' in crop_name or 'chilli' in crop_name or 'pepper' in crop_name %}
-    {% set crop_img = 'https://hips.hearstapps.com/hmg-prod/images/close-up-of-tomatoes-growing-on-plant-ukraine-royalty-free-image-1747409380.pjpeg' %}
+      <img src="https://www.sciencing.com/sciencing/what-are-the-six-stages-of-the-life-cycle-of-a-wheat-plant-13428191/78485816.jpg"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
-  {% elif 'vegetable' in crop_name or 'cucumber' in crop_name %}
-    {% set crop_img = 'https://hips.hearstapps.com/hmg-prod/images/close-up-of-tomatoes-growing-on-plant-ukraine-royalty-free-image-1747409380.pjpeg' %}
+    {% elif 'maize' in crop_name or 'corn' in crop_name %}
 
-  {% else %}
-    {# Generic fallback for crops not included above #}
-    {% set crop_img = url_for('static', filename='images/default-crop.svg') %}
-  {% endif %}
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxP2iqRlYsdoujrjUrk2GbY1ctqGPLf21riGp5Y56mkI4mHl3cmbt8wx59&s=10"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
+    {% elif 'garlic' in crop_name %}
 
-  <!-- =========================================================
-       CROP CARD
-       ========================================================= -->
+      <img src="https://kellogggarden.com/wp-content/uploads/2017/10/growing-garlic-1.jpg"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
-  <div class="card crop-card">
+    {% elif 'tomato' in crop_name %}
 
-    <div class="crop-image-wrapper">
+      <img src="https://hips.hearstapps.com/hmg-prod/images/close-up-of-tomatoes-growing-on-plant-ukraine-royalty-free-image-1747409380.pjpeg"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
-      <img
-        src="{{ crop_img }}"
-        alt="{{ crop.crop_name }}"
-        class="crop-image"
-        loading="lazy"
-        onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-crop.svg') }}';"
-      >
+    {% elif 'onion' in crop_name %}
 
-      <div class="crop-image-overlay"></div>
+      <img src="https://kellogggarden.com/wp-content/uploads/2017/10/growing-garlic-1.jpg"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
 
-      <div class="crop-image-label">
-        <i class="fa-solid fa-seedling"></i>
-        {{ crop.crop_name_bn if current_lang == 'bn' else crop.crop_name }}
-      </div>
+    {% elif 'chili' in crop_name or 'chilli' in crop_name %}
 
-    </div>
+      <img src="https://hips.hearstapps.com/hmg-prod/images/close-up-of-tomatoes-growing-on-plant-ukraine-royalty-free-image-1747409380.pjpeg"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
+
+    {% else %}
+
+      <img src="{{ crop_image_url(crop) }}"
+           style="border-radius:10px;height:140px;width:100%;object-fit:cover;display:block;margin-bottom:12px;"
+           alt="{{ crop.crop_name }}">
+
+    {% endif %}
 
 
     <div class="flex-between">
-
       <h3 style="margin-bottom:0;">
         {{ crop.crop_name_bn if current_lang=='bn' else crop.crop_name }}
       </h3>
@@ -84,19 +180,11 @@
       <span class="tag tag-{{ 'high' if crop.profit_level=='High' else ('medium' if crop.profit_level=='Medium' else 'low') }}">
         {{ crop.profit_level }}
       </span>
-
     </div>
 
-
-    <p style="
-      font-size:12.5px;
-      color:var(--color-text-muted);
-      margin:8px 0;
-      line-height:1.6;
-    ">
+    <p style="font-size:12.5px;color:var(--color-text-muted);margin:8px 0;">
       {{ crop.description }}
     </p>
-
 
     <table>
       <tr>
@@ -134,121 +222,4 @@
 
 {% endif %}
 
-
-<style>
-
-  /* ================================
-     Crop Advisory Image Cards
-     ================================ */
-
-  .crop-card {
-    overflow: hidden;
-    transition:
-      transform 0.25s ease,
-      box-shadow 0.25s ease;
-  }
-
-  .crop-card:hover {
-    transform: translateY(-5px);
-  }
-
-
-  /* Image container */
-
-  .crop-image-wrapper {
-    position: relative;
-    width: 100%;
-    height: 175px;
-    overflow: hidden;
-    border-radius: 12px;
-    margin-bottom: 14px;
-    background: #eef3ed;
-  }
-
-
-  /* Crop image */
-
-  .crop-image {
-    width: 100%;
-    height: 100%;
-    display: block;
-
-    object-fit: cover;
-
-    transition:
-      transform 0.45s ease,
-      filter 0.45s ease;
-  }
-
-
-  .crop-card:hover .crop-image {
-    transform: scale(1.06);
-  }
-
-
-  /* Dark gradient at bottom */
-
-  .crop-image-overlay {
-    position: absolute;
-    inset: 0;
-
-    background:
-      linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.58),
-        rgba(0, 0, 0, 0.08) 55%,
-        transparent
-      );
-
-    pointer-events: none;
-  }
-
-
-  /* Crop name over image */
-
-  .crop-image-label {
-    position: absolute;
-    left: 14px;
-    bottom: 12px;
-
-    display: flex;
-    align-items: center;
-    gap: 7px;
-
-    color: #ffffff;
-
-    font-size: 14px;
-    font-weight: 600;
-
-    text-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.5);
-
-    pointer-events: none;
-  }
-
-
-  .crop-image-label i {
-    font-size: 13px;
-  }
-
-
-  /* Mobile */
-
-  @media (max-width: 768px) {
-
-    .crop-image-wrapper {
-      height: 160px;
-    }
-
-  }
-
-
-  @media (max-width: 480px) {
-
-    .crop-image-wrapper {
-      height: 150px;
-    }
-
-  }
-
-</style>
+{% endblock %}
