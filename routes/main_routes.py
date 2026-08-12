@@ -83,21 +83,24 @@ def dashboard():
 @login_required
 def crop_advisory():
     results = []
+    selected = {"soil_type": "", "season": "", "district": ""}
+
     if request.method == "POST":
-        soil_type = request.form.get("soil_type")
-        season = request.form.get("season")
+        selected["soil_type"] = request.form.get("soil_type", "")
+        selected["season"] = request.form.get("season", "")
+        selected["district"] = request.form.get("district", "")
 
         query = Crop.query
-        if season:
-            query = query.filter((Crop.season == season) | (Crop.season == "All Season"))
-        if soil_type:
-            query = query.filter(Crop.soil_type.ilike(f"%{soil_type}%"))
+        if selected["season"]:
+            query = query.filter((Crop.season == selected["season"]) | (Crop.season == "All Season"))
+        if selected["soil_type"]:
+            query = query.filter(Crop.soil_type.ilike(f"%{selected['soil_type']}%"))
         results = query.all()
 
         if not results:
             results = Crop.query.limit(4).all()
 
-    return render_template("crop.html", crops=results, districts=DISTRICTS)
+    return render_template("crop.html", crops=results, districts=DISTRICTS, selected=selected)
 
 
 # ---------------------------------------------------------

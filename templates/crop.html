@@ -8,20 +8,25 @@
       <label>{{ t('soil_type') }}</label>
       <select name="soil_type" class="form-control">
         <option value="">--</option>
-        <option>Clay</option><option>Loamy</option><option>Sandy Loam</option><option>Sandy</option>
+        <option value="Clay" {{ 'selected' if selected.soil_type == 'Clay' }}>{{ t('soil_clay') }}</option>
+        <option value="Loamy" {{ 'selected' if selected.soil_type == 'Loamy' }}>{{ t('soil_loamy') }}</option>
+        <option value="Sandy Loam" {{ 'selected' if selected.soil_type == 'Sandy Loam' }}>{{ t('soil_sandy_loam') }}</option>
+        <option value="Sandy" {{ 'selected' if selected.soil_type == 'Sandy' }}>{{ t('soil_sandy') }}</option>
       </select>
     </div>
     <div class="form-group" style="margin-bottom:0;">
       <label>{{ t('district') }}</label>
       <select name="district" class="form-control">
-        {% for d in districts %}<option>{{ d }}</option>{% endfor %}
+        {% for d in districts %}<option value="{{ d }}" {{ 'selected' if selected.district == d }}>{{ t('district_' ~ d|lower) }}</option>{% endfor %}
       </select>
     </div>
     <div class="form-group" style="margin-bottom:0;">
       <label>{{ t('season') }}</label>
       <select name="season" class="form-control">
         <option value="">--</option>
-        <option>Kharif</option><option>Rabi</option><option>Summer</option>
+        <option value="Kharif" {{ 'selected' if selected.season == 'Kharif' }}>{{ t('season_kharif') }}</option>
+        <option value="Rabi" {{ 'selected' if selected.season == 'Rabi' }}>{{ t('season_rabi') }}</option>
+        <option value="Summer" {{ 'selected' if selected.season == 'Summer' }}>{{ t('season_summer') }}</option>
       </select>
     </div>
     <button type="submit" class="btn"><i class="fa-solid fa-magnifying-glass"></i> {{ t('suggest_crops') }}</button>
